@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import math
+import cv2
 
 from img_reader import ImageReader
 from csv_reader import CsvReader
@@ -22,6 +23,10 @@ def main():
 
     # Sample image
     image = image_data[1]
+    image = convert_to_3_channels(image)
+    print(image.shape)
+    plt.imshow((image * 255).astype(np.uint8))
+    plt.show()
 
     # this is a dataframe
     df = csv_reader.get_data()
@@ -62,6 +67,12 @@ def check_image_shapes(images):
     for image in images:
         if image.shape is not (96,96):
             print(image.shape)
+
+# converts image to 3 channels
+def convert_to_3_channels(image):
+    image = cv2.merge((image, image, image))
+    return image
+
 
 if __name__ == '__main__':
     main()
