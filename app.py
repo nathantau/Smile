@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import math
 import cv2
+import argparse
 
 from prediction import get_trained_model, predict_image, predict_images
 from img_reader import ImageReader
@@ -11,6 +12,16 @@ from training import train, split
 from net import get_custom_model
 
 def main():
+
+    # Handle arguments from CMD
+    argument_parser = argparse.ArgumentParser(description='Choose whether you want to train network or test network')
+    argument_parser.add_argument('config', help='choose whether to train or test network')
+    args = argument_parser.parse_args().config
+
+    print('the inputted args is', args)
+
+    if args is None:
+        print('This configuration is unsupported. Please enter [train] or [test]')
 
     # file paths for training data
     faces_file_path = 'face-images-with-marked-landmark-points/face_images.npz'
@@ -51,17 +62,24 @@ def main():
     # extracting and separating data as appropriate
     X_train, y_train, X_test, y_test = split(image_data, coordinates_list)
 
-    # training custom CNN
-    # train(get_custom_model(), X_train, y_train, X_test, y_test)
-
-    model = get_trained_model()
-    prediction = predict_images(model, X_test)
-    # scaled_coordinates = scale_coordinates(prediction, 96.0)
-
-    assert len(X_test) == len(prediction)
-
-    draw(X_test, prediction)
-
+    if args == 'train':
+        print('[train] configuration selected. Training.')
+        train(get_custom_model(), X_train, y_train, X_test, y_test)
+    elif args == 'test':
+        print('[test] configuration selected. Testing.')
+        model = get_trained_model()
+        prediction = predict_images(model, X_test)
+        assert len(X_test) == len(prediction)
+        draw_images(X_test, prediction)    
+    else:
+        print('This configuration is unsupported. Please enter [train] or [test]')
+    
+# Converts list of coordinates into coordinate pairs
+def zip_to_coordinate_pairs(coordinates : np.ndarray):
+    iterable_coordinates = iter(coordinates)
+    zipped_list = list(zip(iterable_coordinates, iterable_coordinates))
+    zipped_list = np.array(zipped_list)
+    return zipped_list
 
 # gets all the coordinates from dataframe
 def extract_coordinates_list(df):
@@ -96,13 +114,16 @@ def extract_coordinates_list_unzipped(df):
 
 # draws on each of the images
 def draw_images(images : np.ndarray, coordinates_list : np.ndarray):
-    scale_coordinates(coordinates_list, scale=96.0)
+    coordinates_list = scale_coordinates(coordinates_list, scale=96.0)
     for image, coordinates in zip(images, coordinates_list):
+        coordinates = zip_to_coordinate_pairs(coordinates)
         draw(image, coordinates)
+        # print(image.shape)
 
 
 # draws landmarks for one image using coordinates
 def draw(image, coordinates):
+    print('coordinate pairs are', coordinates)
     plt.imshow((image * 255).astype(np.uint8))
     for coordinate_pair in coordinates:
         if not math.isnan(coordinate_pair[0]) and not math.isnan(coordinate_pair[1]): 
