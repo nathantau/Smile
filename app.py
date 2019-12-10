@@ -8,7 +8,7 @@ import argparse
 from prediction import get_trained_model, predict_image, predict_images
 from img_reader import ImageReader
 from csv_reader import CsvReader
-from training import train, split
+from training import train, split, rotate_sample
 from net import get_custom_model
 
 def main():
@@ -73,7 +73,8 @@ def main():
         draw_images(X_test, prediction)    
     else:
         print('This configuration is unsupported. Please enter [train] or [test]')
-    
+
+
 # Converts list of coordinates into coordinate pairs
 def zip_to_coordinate_pairs(coordinates : np.ndarray):
     iterable_coordinates = iter(coordinates)
@@ -118,7 +119,6 @@ def draw_images(images : np.ndarray, coordinates_list : np.ndarray):
     for image, coordinates in zip(images, coordinates_list):
         coordinates = zip_to_coordinate_pairs(coordinates)
         draw(image, coordinates)
-        # print(image.shape)
 
 
 # draws landmarks for one image using coordinates
