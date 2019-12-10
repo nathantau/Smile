@@ -6,6 +6,8 @@ import cv2
 
 from img_reader import ImageReader
 from csv_reader import CsvReader
+from training import train, split
+from net import model
 
 def main():
 
@@ -21,21 +23,39 @@ def main():
     image_data = image_data['face_images']
     image_data = np.moveaxis(image_data, -1, 0)
 
+    # Must map all the images into 3-channels
+    image_data = map_images_to_3_channels(image_data)
+
     # Sample image
-    image = image_data[1]
-    image = convert_to_3_channels(image)
-    print(image.shape)
-    plt.imshow((image * 255).astype(np.uint8))
-    plt.show()
+    # image = image_data[1]
+    # image = convert_to_3_channels(image)
+    # print(image.shape)
+    # plt.imshow((image * 255).astype(np.uint8))
+    # plt.show()
 
     # this is a dataframe
-    df = csv_reader.get_data()
+    df = csv_reader.get_relevant_data()
  
     # This gets all the coordinates from the dataframe
-    coordinates_list = extract_coordinates_list(df)
-    coordinates = coordinates_list[1]
+    coordinates_list = extract_coordinates_list_unzipped(df)
+    coordinates_list = np.array(coordinates_list)
+
 
     # draw coordinates on image
+    
+
+
+
+    
+    X_train, y_train, X_test, y_test = split(image_data, coordinates_list)
+
+
+    print(y_train[0])
+    # print(y_train[0].shape)
+
+    train(model, X_train, y_train, X_test, y_test)
+
+
 
 
 
@@ -48,6 +68,16 @@ def extract_coordinates_list(df):
         iterable_list = iter(unzipped_list)
         zipped_list = zip(iterable_list, iterable_list)
         coordinates_list.append(list(zipped_list))
+
+    return coordinates_list
+
+# gets all the unzipped coordinates from dataframe
+def extract_coordinates_list_unzipped(df):
+    coordinates_list = []
+    
+    for index, rows in df.iterrows():
+        unzipped_list = [row for row in rows]
+        coordinates_list.append(list(unzipped_list))
 
     return coordinates_list
 
@@ -72,6 +102,16 @@ def check_image_shapes(images):
 def convert_to_3_channels(image):
     image = cv2.merge((image, image, image))
     return image
+
+# maps each image in a series of images into 3 channels
+def map_images_to_3_channels(images : np.ndarray):
+    converted_images = [convert_to_3_channels(image) for image in images]
+    print('converted images are of type', type(converted_images))
+    converted_images = np.array(converted_images)
+
+    print('sample shape', converted_images[0].shape)
+
+    return converted_images
 
 
 if __name__ == '__main__':

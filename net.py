@@ -8,8 +8,8 @@ NUM_CHANNELS = 3
 WIDTH = 96
 HEIGHT = 96
 
-# the output consists of 15 pairs of points and 1 output that determines if a face exists or not
-OUTPUT = 2*15 + 1
+# the output consists of 15 pairs of points
+OUTPUT = 8
 
 # transfer learning with tensorflow's vgg19 model trained on imagenet (1M+ images)
 base_model = VGG19(
