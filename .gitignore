@@ -2,3 +2,4 @@ face-images-with-marked-landmark-points.zip
 .vscode
 __pycache__
 face-images-with-marked-landmark-points
+*.h5

@@ -4,10 +4,11 @@ from matplotlib.patches import Rectangle
 import math
 import cv2
 
+from prediction import get_trained_model, predict_image, predict_images
 from img_reader import ImageReader
 from csv_reader import CsvReader
 from training import train, split
-from net import model
+from net import get_custom_model
 
 def main():
 
@@ -27,11 +28,13 @@ def main():
     image_data = map_images_to_3_channels(image_data)
 
     # Sample image
+    # -----------------------------------------
     # image = image_data[1]
     # image = convert_to_3_channels(image)
     # print(image.shape)
     # plt.imshow((image * 255).astype(np.uint8))
     # plt.show()
+    # -----------------------------------------
 
     # this is a dataframe
     df = csv_reader.get_relevant_data()
@@ -39,24 +42,25 @@ def main():
     # This gets all the coordinates from the dataframe
     coordinates_list = extract_coordinates_list_unzipped(df)
     coordinates_list = np.array(coordinates_list)
-
-
+    coordinates_list = scale_coordinates(coordinates_list)
     # draw coordinates on image
     
+    # validation to ensure data is clean
+    validate_data(image_data, coordinates_list)
 
-
-
-    
+    # extracting and separating data as appropriate
     X_train, y_train, X_test, y_test = split(image_data, coordinates_list)
 
+    # training custom CNN
+    # train(get_custom_model(), X_train, y_train, X_test, y_test)
 
-    print(y_train[0])
-    # print(y_train[0].shape)
+    model = get_trained_model()
+    prediction = predict_images(model, X_test)
+    # scaled_coordinates = scale_coordinates(prediction, 96.0)
 
-    train(model, X_train, y_train, X_test, y_test)
+    assert len(X_test) == len(prediction)
 
-
-
+    draw(X_test, prediction)
 
 
 # gets all the coordinates from dataframe
@@ -79,13 +83,27 @@ def extract_coordinates_list_unzipped(df):
         unzipped_list = [row for row in rows]
         coordinates_list.append(list(unzipped_list))
 
+    # dropping out invalid data
+    coordinates_list = [[coordinate if not np.isnan(coordinate) else 0 for coordinate in coordinates] for coordinates in coordinates_list]
+
+    num_zeroes = 0
+    for coordinates in coordinates_list:
+        for coordinate in coordinates:
+            if coordinate == 0:
+                num_zeroes += 1
+
     return coordinates_list
+
+# draws on each of the images
+def draw_images(images : np.ndarray, coordinates_list : np.ndarray):
+    scale_coordinates(coordinates_list, scale=96.0)
+    for image, coordinates in zip(images, coordinates_list):
+        draw(image, coordinates)
+
 
 # draws landmarks for one image using coordinates
 def draw(image, coordinates):
-
-    plt.imshow(image)
-
+    plt.imshow((image * 255).astype(np.uint8))
     for coordinate_pair in coordinates:
         if not math.isnan(coordinate_pair[0]) and not math.isnan(coordinate_pair[1]): 
             plt.gca().add_patch(Rectangle((coordinate_pair[0],coordinate_pair[1]),1,1, color='red'))
@@ -113,6 +131,13 @@ def map_images_to_3_channels(images : np.ndarray):
 
     return converted_images
 
+def scale_coordinates(coordinates_list : np.ndarray, scale=float(1.0/96.0)):
+    scaled_coordinates_list = np.array([coordinates * scale for coordinates in coordinates_list])
+    return scaled_coordinates_list
+
+def validate_data(images : np.ndarray, coordinates_list : np.ndarray):
+    assert not np.any(np.isnan(images))
+    assert not np.any(np.isnan(coordinates_list))
 
 if __name__ == '__main__':
     main()

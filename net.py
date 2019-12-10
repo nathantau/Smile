@@ -30,3 +30,19 @@ output = layers.Dense(OUTPUT, activation='relu')(output)
 model = models.Model(inputs=base_model.input, outputs=output)
 
 print(model.summary())
+
+def get_custom_model():
+    base_model = VGG19(
+        input_shape=(HEIGHT, WIDTH, NUM_CHANNELS),
+        include_top=False,
+        weights='imagenet'
+    )
+
+    output = base_model.get_layer('block3_pool').output
+    output = layers.Flatten()(output)
+    output = layers.Dense(256, activation='tanh')(output)
+    output = layers.Dense(OUTPUT, activation='sigmoid')(output)
+
+    model = models.Model(inputs=base_model.input, outputs=output)
+
+    return model

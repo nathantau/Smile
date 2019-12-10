@@ -52,9 +52,3 @@ def train(model, X_train : np.ndarray, y_train : np.ndarray, X_test : np.ndarray
     )
 
     return history
-
-
-def augment(images):
-
-    
-
