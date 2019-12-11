@@ -13,9 +13,6 @@ def get_trained_model():
 def predict_images(model, test_images : np.ndarray):
     return np.array(model.predict(test_images))
 
-   
-
-
 def predict_image(model, test_image : np.ndarray):
     test_image = np.reshape(test_image, (1,96,96,3))
     output = model.predict(test_image)

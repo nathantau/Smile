@@ -8,12 +8,19 @@ import argparse
 from prediction import get_trained_model, predict_image, predict_images
 from img_reader import ImageReader
 from csv_reader import CsvReader
-from training import split, rotate_sample, generate_and_save_training_data, map_images_to_3_channels, extract_coordinates_list_unzipped
+from training import split, rotate_sample, generate_and_save_training_data, map_images_to_3_channels, extract_coordinates_list_unzipped, extract_coordinates_list
+from loader import Loader
+
 from net import get_custom_model, train
 
 def main():
 
-    # Handle arguments from CMD
+    '''
+    This is the entrypoint of the whole application. From the CMD,
+    the user can specify either 'train' or 'test' after 'python app.py'
+    to choose the mode which they would like to execute.
+    '''
+    # handle arguments from CMD
     argument_parser = argparse.ArgumentParser(description='Choose whether you want to train network or test network')
     argument_parser.add_argument('config', help='choose whether to train or test network')
     args = argument_parser.parse_args().config
@@ -21,7 +28,7 @@ def main():
     print('the inputted args is', args)
 
     if args is None:
-        print('This configuration is unsupported. Please enter [train] or [test] or [data]')
+        print('This configuration is unsupported. Please enter [train] or [test]')
         return
 
     # file paths for training data
@@ -49,7 +56,7 @@ def main():
     # -----------------------------------------
 
     # this is a dataframe
-    df = csv_reader.get_relevant_data()
+    df = csv_reader.get_facial_features()
  
     # This gets all the coordinates from the dataframe
     coordinates_list = extract_coordinates_list_unzipped(df)
@@ -66,12 +73,18 @@ def main():
     if args == 'train':
         print('[train] configuration selected. Training.')
 
-        image_reader = ImageReader('training_data.npz')
-        data = image_reader.get_array()
-        X_train = data['images']
-        y_train = data['coordinates_list']
+        # image_reader = ImageReader('training_data.npz')
+        # data = image_reader.get_array()
+        # X_train = data['images']
+        # y_train = data['coordinates_list']
+
+        loader = Loader()
+
+        X_train = loader.load_from_filepath('images.npy')
+        y_train = loader.load_from_filepath('coordinates_list.npy')
         
         assert len(X_train) == len(y_train)
+
         train(get_custom_model(), X_train, y_train, X_test, y_test)
 
     elif args == 'test':
@@ -80,65 +93,37 @@ def main():
         prediction = predict_images(model, X_test)
         assert len(X_test) == len(prediction)
         draw_images(X_test, prediction)
-    elif args == 'data':
-        print('[data] configuration selected. Creating and saving data.')
-        filename = generate_and_save_training_data(X_train, y_train)
-        print('data has been saved in file', filename)
+
     else:
         print('This configuration is unsupported. Please enter [train] or [test]')
 
 
-# Converts list of coordinates into coordinate pairs
 def zip_to_coordinate_pairs(coordinates : np.ndarray):
+    '''
+    Consumes a list of coordinates (per 1 image) and converts
+    it into coordinate pairs.
+    '''
     iterable_coordinates = iter(coordinates)
     zipped_list = list(zip(iterable_coordinates, iterable_coordinates))
     zipped_list = np.array(zipped_list)
     return zipped_list
 
-# gets all the coordinates from dataframe
-def extract_coordinates_list(df):
-    coordinates_list = []
-    
-    for index, rows in df.iterrows():
-        unzipped_list = [row for row in rows]
-        iterable_list = iter(unzipped_list)
-        zipped_list = zip(iterable_list, iterable_list)
-        coordinates_list.append(list(zipped_list))
-
-    return coordinates_list
-
-# # gets all the unzipped coordinates from dataframe
-# def extract_coordinates_list_unzipped(df):
-#     coordinates_list = []
-    
-#     for index, rows in df.iterrows():
-#         unzipped_list = [row for row in rows]
-#         coordinates_list.append(list(unzipped_list))
-
-#     # dropping out invalid data
-#     coordinates_list = [[coordinate if not np.isnan(coordinate) else 0 for coordinate in coordinates] for coordinates in coordinates_list]
-
-#     num_zeroes = 0
-#     for coordinates in coordinates_list:
-#         for coordinate in coordinates:
-#             if coordinate == 0:
-#                 num_zeroes += 1
-
-#     return coordinates_list
-
-# draws on each of the images
 def draw_images(images : np.ndarray, coordinates_list : np.ndarray):
+    '''
+    Consumes a list of images and a list of coordinates, performing
+    the draw() operation on each of them.
+    '''
     coordinates_list = scale_coordinates(coordinates_list, scale=96.0)
     for image, coordinates in zip(images, coordinates_list):
-
-        image, coordinates = rotate_sample(image, coordinates)
-
         coordinates = zip_to_coordinate_pairs(coordinates)
         draw(image, coordinates)
 
 
-# draws landmarks for one image using coordinates
-def draw(image, coordinates):
+def draw(image : np.ndarray, coordinates : np.ndarray):
+    '''
+    Consumes an image and coordinate pairs matplotlib to draw coordinates 
+    on a given image.
+    '''
     print('coordinate pairs are', coordinates)
     plt.imshow((image * 255).astype(np.uint8))
     num = 0
@@ -150,7 +135,11 @@ def draw(image, coordinates):
 
     plt.show()
 
-def choose_color(num):
+def choose_color(num : int):
+    '''
+    Utility method to determine which color should be plotted
+    on an image.
+    '''
     if num == 0:
         color = 'red'
     elif num == 1:
@@ -161,32 +150,18 @@ def choose_color(num):
         color = 'white'
     return color
 
-# checks to see that all images have the same input size
-def check_image_shapes(images):
+def check_image_shapes(images : np.ndarray):
+    '''
+    Utility method to check that all images have the correct shape.
+    '''
     for image in images:
         if image.shape is not (96,96):
             print(image.shape)
 
-# # converts image to 3 channels
-# def convert_to_3_channels(image):
-#     image = cv2.merge((image, image, image))
-#     return image
-
-# # maps each image in a series of images into 3 channels
-# def map_images_to_3_channels(images : np.ndarray):
-#     converted_images = [convert_to_3_channels(image) for image in images]
-#     print('converted images are of type', type(converted_images))
-#     converted_images = np.array(converted_images)
-
-#     print('sample shape', converted_images[0].shape)
-
-#     return converted_images
-
-def scale_coordinates(coordinates_list : np.ndarray, scale=float(1.0/96.0)):
-    scaled_coordinates_list = np.array([coordinates * scale for coordinates in coordinates_list])
-    return scaled_coordinates_list
-
 def validate_data(images : np.ndarray, coordinates_list : np.ndarray):
+    '''
+    Utility method to verify that data is sanitized
+    '''
     assert not np.any(np.isnan(images))
     assert not np.any(np.isnan(coordinates_list))
 
