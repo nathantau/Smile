@@ -1,4 +1,5 @@
 # implement some mad transfer learning here
+import numpy as np
 
 import tensorflow.compat.v1 as tf
 from tensorflow.keras import models, layers
@@ -46,3 +47,26 @@ def get_custom_model():
     model = models.Model(inputs=base_model.input, outputs=output)
 
     return model
+
+# trains the vgg19 neural network
+def train(model, X_train : np.ndarray, y_train : np.ndarray, X_test : np.ndarray, y_test : np.ndarray):
+
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+    
+    model_callback = [
+        callbacks.ModelCheckpoint(
+            filepath='modelMK2.h5',
+            save_best_only=True,
+            monitor='val_loss',
+            verbose=1)
+    ]
+
+    history = model.fit(
+        x=X_train,
+        y=y_train,
+        epochs=100,
+        validation_data=(X_test, y_test),
+        callbacks=model_callback,
+    )
+
+    return history
