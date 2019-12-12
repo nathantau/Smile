@@ -6,17 +6,14 @@ from matplotlib.patches import Rectangle
 import math
 import cv2
 
-def get_trained_model():
-    model = load_model('model_12.h5')
+def get_trained_model(filename: str):
+    model = load_model(filename)
     return model
 
-def predict_images(model, test_images : np.ndarray):
+def predict_images(model, test_images: np.ndarray):
     return np.array(model.predict(test_images))
 
-   
-
-
-def predict_image(model, test_image : np.ndarray):
+def predict_image(model, test_image: np.ndarray):
     test_image = np.reshape(test_image, (1,96,96,3))
     output = model.predict(test_image)
     output = np.array(output)
