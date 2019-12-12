@@ -1,7 +1,5 @@
 # Smile
 
-======
-
 Smile is a facial recognition software that is used to determine a person's key features. 
 This project is heavily based off of using the concept of localization.
 
@@ -20,32 +18,32 @@ The ML concepts that I was able to explore in building this project include:
 
 **Localization**
 
-The idea of localization is very intuitive - it uses neural networks to perform regression, rather than classification. 
+* The idea of localization is very intuitive - it uses neural networks to perform regression, rather than classification. 
 Instead of using 1-hot-encoded vectors (ex: [1, 0, 0, 0]) for classification, the network is trained to produce an output vector
 with each element corresponding to a specific location on a plane through coordinates (ex: [100.4, 50.3, 31.234, 1.052]). 
 
-One of the first challenges I faced with localization was how difficult it was to train the network to accurately predict the 
+* One of the first challenges I faced with localization was how difficult it was to train the network to accurately predict the 
 coordinates of facial features. Because the given coordinates were between 0 and 96 (My dataset was composed of 96 x 96 images),
 the activation function in the final layer of my network was *Relu* (Rectified Linear), which maps all positive inputs to the themselves
 and all negative inputs to 0. This wasn't the best approach as it made training very slow and I wasn't sure that the network would
 converge to a local minimum. 
 
-I was able to solve this by mapping each of the coordinates in my training set to be between 0.0 and 1.0, by multiplying each coordinate
+* I was able to solve this by mapping each of the coordinates in my training set to be between 0.0 and 1.0, by multiplying each coordinate
 by a factor of (1.0/96.0 =~ 0.0104). From there on out, it was a matter of changing the activation function in my network's last layer
 to the *Sigmoid* activation function, which conveniently has a codomain between 0.0 and 1.0. With this new implementation, the optimization 
 problem at hand did not change, but the network's performance drastically improved. 
 
 **Transfer Learning**
 
-Transfer learning is very beneficial when training networks on large amounts of data - it leverages a pre-trained network, using the 
+* Transfer learning is very beneficial when training networks on large amounts of data - it leverages a pre-trained network, using the 
 features that the pre-trained network is aware of for feature extraction (detecting entities that the pre-trained network is good at), allowing for speedy training.
 
-I decided to use the *VGG19* network as my base model, pre-trained on the *ImageNet* dataset which consists of over 1 million images. 
+* I decided to use the *VGG19* network as my base model, pre-trained on the *ImageNet* dataset which consists of over 1 million images. 
 I then added custom trainable layers connecting to the base model to leverage it for feature extraction. The results I got from this were unexpected,
 as my network's performance was relatively poor and during training, the loss seemed to stagnate and not decrease. After experimenting with using less
 and less layers of the *VGG19* model, I saw that my results improved, but not by far.
 
-My conclusion is that these results are due to overfitting - the network was trained on a dataset consisting of images with high pixel densities,
+* My conclusion is that these results are due to overfitting - the network was trained on a dataset consisting of images with high pixel densities,
 which were not applicable to my dataset which was bounded to images that were 96 x 96 pixels. I resorted to using a custom neural network, and was
 easily able to achieve a validatoin loss of just under 0.01, in less than 60 epochs.
 
@@ -70,23 +68,23 @@ Here are some images that showcase my trained model's performance:
 * Green -> Nose 
 * White -> Mouth
 
-![](assets/Capture5.png)
-![](assets/Capture6.png)
-![](assets/Capture7.png)
-![](assets/Capture8.png)
-![](assets/Capture9.png)
-![](assets/Capture10.png)
-![](assets/Capture11.png)
-![](assets/Capture12.png)
-![](assets/Capture19.png)
+![Face](assets/Capture5.png)
+![Face](assets/Capture6.png)
+![Face](assets/Capture7.png)
+![Face](assets/Capture8.png)
+![Face](assets/Capture9.png)
+![Face](assets/Capture10.png)
+![Face](assets/Capture11.png)
+![Face](assets/Capture12.png)
+![Face](assets/Capture19.png)
 
 *Let's look at the performance on pixelated, hard-to-recognize image!*
 
-![](assets/Capture20.png)
+![Face](assets/Capture20.png)
 
 *We can even accurately detect landmarks on a baby!*
 
-![](assets/Capture16.png)
+![Face](assets/Capture16.png)
 
 Feel free to explore the assets folder for more image samples.
 
