@@ -7,7 +7,7 @@ class CsvReader():
     of a *csv file containing the coordinates of facial
     features.
     '''
-    def __init__(self, file_path : str):
+    def __init__(self, file_path: str):
         '''
         Uses pandas to read *csv at the specified file path
         '''

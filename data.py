@@ -1,5 +1,5 @@
 import numpy as np
-from training import rotate_sample, augment_images, split, map_images_to_3_channels, extract_coordinates_list_unzipped, scale_coordinates, generate_and_save_training_data
+from training import rotate_sample, augment_images, split, map_images_to_3_channels, extract_coordinates_list_unzipped, scale_coordinates, generate_and_save_training_data, scale_coordinates_list
 
 from csv_reader import CsvReader
 from img_reader import ImageReader
@@ -32,7 +32,7 @@ df = csv_reader.get_facial_features()
 # this gets all the coordinates from the dataframe
 coordinates_list = extract_coordinates_list_unzipped(df)
 coordinates_list = np.array(coordinates_list)
-coordinates_list = scale_coordinates(coordinates_list)
+coordinates_list = scale_coordinates_list(coordinates_list)
 
 # extracting and separating data as appropriate
 X_train, y_train, X_test, y_test = split(image_data, coordinates_list)

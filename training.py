@@ -2,6 +2,13 @@ import numpy as np
 import os
 import random
 import cv2
+import matplotlib.pyplot as plt
+import math
+
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 
 TRAIN_PERCENTAGE = 0.8
 IMG_SIZE = 96
@@ -10,13 +17,14 @@ IMG_SIZE = 96
 This is a utility class with many functions to allow for easy training/data manipulation
 '''
 
-def rotate_sample(image : np.ndarray, coordinates : np.ndarray):
+def rotate_sample(image: np.ndarray, coordinates: np.ndarray):
     '''
     Rotates a given image and its respective facial coordinates
     by either 90, 180, 270, or 360 degrees. It returns a tuple of 
     the augmented images and coordinates.
     '''
-    rotations = random.randint(0, 4)
+    rotations = random.randint(0, 3)
+    coordinates = scale_coordinates(coordinates, scale=96.0)
     iterable_coordinates = iter(coordinates)
     zipped_coordinates = zip(iterable_coordinates, iterable_coordinates)
 
@@ -27,10 +35,11 @@ def rotate_sample(image : np.ndarray, coordinates : np.ndarray):
 
     unzipped_coordinates = list(sum(zipped_coordinates, ()))
     unzipped_coordinates = np.array(unzipped_coordinates)
+    unzipped_coordinates = scale_coordinates(unzipped_coordinates, scale=1.0/96.0)
 
     return image, unzipped_coordinates
 
-def augment_images(images : np.ndarray, coordinates_list : np.ndarray, generate_data=False):
+def augment_images(images: np.ndarray, coordinates_list: np.ndarray, generate_data=True):
     '''
     Consumes a list of images and a list of coordinates and returns a list of modified
     images and corresponding coordinates. This leverages the rotate_sample(...) method and 
@@ -40,26 +49,29 @@ def augment_images(images : np.ndarray, coordinates_list : np.ndarray, generate_
     for _ in range(1):
         count = 0
         total_length = len(images)
+
+        new_images = []
+        new_coordinates_list = []
+
         for image, coordinates in zip(images, coordinates_list):
             print('sample number:', count, '/', total_length)
             image, coordinates = rotate_sample(image, coordinates)
-            images = np.append(images, image)
-            coordinates_list = np.append(coordinates_list, coordinates)
+
+            new_images.append(image)
+            new_coordinates_list.append(coordinates)
 
             if generate_data:
                 count += 1
-                if count % 50 == 0:
-                    np.save('images.npy', images)
-                    np.save('coordinates_list.npy', coordinates_list)
 
-    return images, coordinates_list
+    np.save('images.npy', new_images)
+    np.save('coordinates_list.npy', new_coordinates_list)
+
 
 # Used to generate and save training data to save time 
-def generate_and_save_training_data(images : np.ndarray, coordinates_list : np.ndarray):
-    images, coordinates_list = augment_images(images, coordinates_list)
-    return 'images.npy', 'coordinates_list.npy'
+def generate_and_save_training_data(images: np.ndarray, coordinates_list: np.ndarray):
+    augment_images(images, coordinates_list)
 
-def split(images : np.ndarray , coordinates_list : np.ndarray):
+def split(images: np.ndarray , coordinates_list: np.ndarray):
     '''
     Consumes a list of images and a list of coordinates (1 set of
     facial features) and splits them into training sets and testing
@@ -77,15 +89,15 @@ def split(images : np.ndarray , coordinates_list : np.ndarray):
     X_test = images[train_size:]
     y_test = coordinates_list[train_size:]
 
-    print('training size', len(X_train))
-    print('test size', len(X_test))
+    print('training X size', len(X_train), 'training y size', len(y_train))
+    print('testing X size', len(X_test), 'testing y size', len(y_test))
 
     assert train_size == len(X_train) and train_size == len(y_train)
     assert test_size == len(X_test) and test_size == len(y_test)
 
     return X_train, y_train, X_test, y_test 
 
-def convert_to_3_channels(image : np.ndarray):
+def convert_to_3_channels(image: np.ndarray):
     '''
     Given a single-channel image, it converts it 
     into 3 channels for neural network compatibility
@@ -93,7 +105,7 @@ def convert_to_3_channels(image : np.ndarray):
     image = cv2.merge((image, image, image))
     return image
 
-def map_images_to_3_channels(images : np.ndarray):
+def map_images_to_3_channels(images: np.ndarray):
     '''
     Consumes a list of 1-channel images and maps them to 
     a list of 3 channel images, by layering each image with
@@ -137,7 +149,7 @@ def extract_coordinates_list(df):
 
     return coordinates_list
 
-def scale_coordinates(coordinates_list : np.ndarray, scale=float(1.0/96.0)):
+def scale_coordinates_list(coordinates_list: np.ndarray, scale=float(1.0/96.0)):
     '''
     Consumes a list of list of coordinate pairs and returns
     the same list with each coordinate scaled by a given amount
@@ -145,3 +157,12 @@ def scale_coordinates(coordinates_list : np.ndarray, scale=float(1.0/96.0)):
     scaled_coordinates_list = np.array([coordinates * scale for coordinates in coordinates_list])
 
     return scaled_coordinates_list
+
+def scale_coordinates(coordinates: np.ndarray, scale=float(1.0/96.0)):
+    '''
+    Consumes a list of coordinate pairs and returns
+    the same list with each coordinate scaled by a given amount
+    '''
+    scaled_coordinates = np.array([coordinate * scale for coordinate in coordinates])
+
+    return scaled_coordinates

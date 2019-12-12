@@ -1,22 +1,8 @@
 import numpy as np
 import math
-from matplotlib.patches import Rectangle
-
-import pandas as pd
 import matplotlib.pyplot as plt
-from training import rotate_sample, scale_coordinates
-
-class Loader():
-    '''
-    This class is used for loading the training data stored in *.npy formats.
-    '''
-    def __init__(self):
-        super()
-
-    def load_from_filepath(self, filepath: str):
-        print('Loading data from filepath {}'.format(filepath))
-        np_array = np.load(filepath)
-        return np_array
+from matplotlib.patches import Rectangle
+from training import scale_coordinates
 
 def zip_to_coordinate_pairs(coordinates: np.ndarray):
     '''
@@ -34,7 +20,6 @@ def draw_images(images: np.ndarray, coordinates_list: np.ndarray):
     the draw() operation on each of them.
     '''
     for image, coordinates in zip(images, coordinates_list):
-        coordinates = zip_to_coordinate_pairs(coordinates)
         draw(image, coordinates)
 
 
@@ -44,6 +29,7 @@ def draw(image: np.ndarray, coordinates: np.ndarray):
     on a given image.
     '''
     coordinates = scale_coordinates(coordinates, scale=96.0)
+    coordinates = zip_to_coordinate_pairs(coordinates)
     print('coordinate pairs are', coordinates)
     plt.imshow((image * 255).astype(np.uint8))
     num = 0
@@ -69,12 +55,3 @@ def choose_color(num: int):
     elif num == 3:
         color = 'white'
     return color
-
-
-
-# loader = Loader()
-
-# X_train = loader.load_from_filepath('images.npy')
-# y_train = loader.load_from_filepath('coordinates_list.npy')
-
-# draw_images(X_train, y_train)
