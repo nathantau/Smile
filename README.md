@@ -7,6 +7,8 @@ This project is heavily based off of using the concept of localization.
 
 Smile is currently able to detect a person's eyes, nose, and mouth, with a high degree of accuracy, regardless of orientation.
 
+---
+
 ## Machine Learning
 
 ### Overview
@@ -47,6 +49,8 @@ and less layers of the *VGG19* model, I saw that my results improved, but not by
 which were not applicable to my dataset which was bounded to images that were 96 x 96 pixels. I resorted to using a custom neural network, and was
 easily able to achieve a validatoin loss of just under 0.01, in less than 60 epochs.
 
+![Terminal](assets/terminal.PNG)
+
 **Miscellaneous**
 
 The loss function that I decided to go with in this implementation was *Mean Squared Error*. Although a very basic cost function, 
@@ -68,25 +72,27 @@ Here are some images that showcase my trained model's performance:
 * Green -> Nose 
 * White -> Mouth
 
-![Face](assets/Capture5.png)
-![Face](assets/Capture6.png)
-![Face](assets/Capture7.png)
-![Face](assets/Capture8.png)
-![Face](assets/Capture9.png)
-![Face](assets/Capture10.png)
-![Face](assets/Capture11.png)
-![Face](assets/Capture12.png)
-![Face](assets/Capture19.png)
+![Face](assets/Capture5.PNG)
+![Face](assets/Capture6.PNG)
+![Face](assets/Capture7.PNG)
+![Face](assets/Capture8.PNG)
+![Face](assets/Capture9.PNG)
+![Face](assets/Capture10.PNG)
+![Face](assets/Capture11.PNG)
+![Face](assets/Capture12.PNG)
+![Face](assets/Capture19.PNG)
 
 *Let's look at the performance on pixelated, hard-to-recognize image!*
 
-![Face](assets/Capture20.png)
+![Face](assets/Capture20.PNG)
 
 *We can even accurately detect landmarks on a baby!*
 
-![Face](assets/Capture16.png)
+![Face](assets/Capture16.PNG)
 
 Feel free to explore the assets folder for more image samples.
+
+---
 
 ## Directory
 
