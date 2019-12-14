@@ -61,6 +61,16 @@ it yielded great results (I suspect because I had turned this problem into a reg
 
 This project is built with Python, Tensorflow-GPU, and multiple popularized Python libraries.
 
+### Demo
+
+Here is a live demonstration of my ML model processing images through my webcam:
+
+[![Video Demonstration]((https://img.youtube.com/vi/f1XyNzHjqIA/0.jpg))](https://www.youtube.com/watch?v=f1XyNzHjqIA)
+
+As we can see, there are some inconsistencies. It performs well only when my network's images are centered
+in a specific location. This is largely due to the fact that my training and test data all contained
+the faces of individuals in a particular location. This, I believe, can be solved by performing data augmentation for shifting, rather than only using rotations.
+
 ### Sample Images
 
 Here are some images that showcase my trained model's performance:
