@@ -65,7 +65,7 @@ This project is built with Python, Tensorflow-GPU, and multiple popularized Pyth
 
 Here is a live demonstration of my ML model processing images through my webcam:
 
-[![Video Demonstration]((https://img.youtube.com/vi/f1XyNzHjqIA/0.jpg))](https://www.youtube.com/watch?v=f1XyNzHjqIA)
+[![Video Demonstration](https://img.youtube.com/vi/f1XyNzHjqIA/0.jpg)](https://www.youtube.com/watch?v=f1XyNzHjqIA)
 
 As we can see, there are some inconsistencies. It performs well only when my network's images are centered
 in a specific location. This is largely due to the fact that my training and test data all contained
