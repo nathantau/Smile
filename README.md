@@ -100,6 +100,10 @@ Here are some images that showcase my trained model's performance:
 
 ![Face](assets/Capture16.PNG)
 
+*And of course, I had to try it on myself*
+
+![Face](assets/me.jpg)
+
 Feel free to explore the assets folder for more image samples.
 
 ---
